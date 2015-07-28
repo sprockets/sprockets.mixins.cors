@@ -51,6 +51,15 @@ class CORSMixin(object):
         self.cors.allowed_origins.update(self.settings.get('cors_origins', []))
         super(CORSMixin, self).initialize(**kwargs)
 
+    def prepare(self):
+        super(CORSMixin, self).prepare()
+        if not self._finished:
+            origin = self.request.headers.get('Origin')
+            if origin in self.cors.allowed_origins:
+                self.set_header('Access-Control-Allow-Origin', origin)
+                if self.cors.credentials_supported:
+                    self.set_header('Access-Control-Allow-Credentials', 'true')
+
     def options(self):
         """
         Respond to an :http:method:`OPTIONS` request.

@@ -63,3 +63,36 @@ class PreflightTests(testing.AsyncHTTPTestCase):
                                        'Access-Control-Request-Method': 'GET'})
         self.assertEqual(response.headers['Access-Control-Allow-Credentials'],
                          'true')
+
+
+class StandardRequestTests(testing.AsyncHTTPTestCase):
+
+    def get_app(self):
+        return web.Application(
+            [web.url('/', SimpleRequestHandler),
+             web.url('/private', SimpleRequestHandler, {'creds': True})],
+            cors_origins=['http://host.example.com'],
+        )
+
+    def test_that_get_response_includes_allow_origin(self):
+        response = self.fetch('/', headers={
+            'Origin': 'http://host.example.com'})
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'],
+                         'http://host.example.com')
+
+    def test_that_get_response_includes_allow_creds_when_secure(self):
+        response = self.fetch('/private', headers={
+            'Origin': 'http://host.example.com'})
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'],
+                         'http://host.example.com')
+        self.assertEqual(response.headers['Access-Control-Allow-Credentials'],
+                         'true')
+
+    def test_that_get_skips_allow_origin_on_missing_origin_header(self):
+        response = self.fetch('/')
+        self.assertNotIn('Access-Control-Allow-Origin', response.headers)
+
+    def test_that_get_skips_allow_origin_when_handler_finishes(self):
+        response = self.fetch('/', headers={
+            'Origin': 'http://host.example.com', 'X-Fail': 'yes please'})
+        self.assertNotIn('Access-Control-Allow-Origin', response.headers)
