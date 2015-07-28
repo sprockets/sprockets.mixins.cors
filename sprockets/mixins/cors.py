@@ -22,9 +22,17 @@ class CORSSettings(object):
        response header.  If the requested origin is in this set, then
        the origin is allowed; otherwise, a :http:statuscode:`403` is returned.
 
+    .. attribute:: credentials_supported
+
+       Should the mix-in generate the
+       :mailheader:`Access-Control-Allow-Credentials` header in the
+       response.
+
     """
     def __init__(self):
+        self.allowed_methods = set()
         self.allowed_origins = set()
+        self.credentials_supported = False
 
 
 class CORSMixin(object):
@@ -57,10 +65,7 @@ class CORSMixin(object):
         self.set_status(204)
         if 'Origin' in self.request.headers:
             if self._cors_preflight_checks():
-                self.set_header('Access-Control-Allow-Origin',
-                                self.request.headers['Origin'])
-                self.set_header('Access-Control-Allow-Methods',
-                                ','.join(self.cors.allowed_methods))
+                self._build_preflight_response(self.request.headers['Origin'])
             else:
                 self.set_status(403)
         self.finish()
@@ -74,3 +79,10 @@ class CORSMixin(object):
 
         return (origin in self.cors.allowed_origins and
                 method in self.cors.allowed_methods)
+
+    def _build_preflight_response(self, origin):
+        self.set_header('Access-Control-Allow-Origin', origin)
+        self.set_header('Access-Control-Allow-Methods',
+                        ','.join(self.cors.allowed_methods))
+        if self.cors.credentials_supported:
+            self.set_header('Access-Control-Allow-Credentials', 'true')

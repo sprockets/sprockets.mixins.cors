@@ -26,7 +26,8 @@ class PreflightTests(testing.AsyncHTTPTestCase):
 
     def get_app(self):
         return web.Application(
-            [web.url('/', SimpleRequestHandler)],
+            [web.url('/', SimpleRequestHandler),
+             web.url('/private', SimpleRequestHandler, {'creds': True})],
             cors_origins=['http://host.example.com'],
         )
 
@@ -55,3 +56,10 @@ class PreflightTests(testing.AsyncHTTPTestCase):
         response = self.fetch('/', method='OPTIONS',
                               headers={'Origin': 'http://host.example.com'})
         self.assertEqual(response.code, 403)
+
+    def test_that_preflight_generates_allow_credentials_appropriately(self):
+        response = self.fetch('/private', method='OPTIONS',
+                              headers={'Origin': 'http://host.example.com',
+                                       'Access-Control-Request-Method': 'GET'})
+        self.assertEqual(response.headers['Access-Control-Allow-Credentials'],
+                         'true')
