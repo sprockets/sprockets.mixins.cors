@@ -13,6 +13,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.httpdomain',
 ]
 
 templates_path = []
