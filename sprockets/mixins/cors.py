@@ -6,10 +6,37 @@ version_info = (0, 0, 0)
 __version__ = '.'.join(str(v) for v in version_info)
 
 
+class CORSSettings(object):
+    """
+    Configures the CORS behavior.
+
+    .. attribute:: allowed_origins
+
+       The :class:`set` of origins that are allowed for the endpoint.
+       This controls the :mailheader:`Access-Control-Allow-Origin`
+       response header.  If the requested origin is in this set, then
+       the origin is allowed; otherwise, a :http:statuscode:`403` is returned.
+
+    """
+    def __init__(self):
+        self.allowed_origins = set()
+
+
 class CORSMixin(object):
     """
     Mix this in over a :class:`tornado.web.RequestHandler` for CORS support.
+
+    .. attribute:: cors
+
+       A :class:`.CORSSettings` instance that controls the behavior of
+       the mix-in.
+
     """
+
+    def initialize(self, **kwargs):
+        self.cors = CORSSettings()
+        self.cors.allowed_origins.update(self.settings.get('cors_origins', []))
+        super(CORSMixin, self).initialize(**kwargs)
 
     def options(self):
         """
@@ -21,3 +48,10 @@ class CORSMixin(object):
         """
         self.set_header('Allow', ','.join(self.SUPPORTED_METHODS))
         self.set_status(204)
+        if 'Origin' in self.request.headers:
+            if self.request.headers['Origin'] in self.cors.allowed_origins:
+                self.set_header('Access-Control-Allow-Origin',
+                                self.request.headers['Origin'])
+            else:
+                self.set_status(403)
+        self.finish()
