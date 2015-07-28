@@ -32,12 +32,26 @@ class PreflightTests(testing.AsyncHTTPTestCase):
 
     def test_that_options_understands_origin_header(self):
         response = self.fetch('/', method='OPTIONS',
-                              headers={'Origin': 'http://host.example.com'})
+                              headers={'Origin': 'http://host.example.com',
+                                       'Access-Control-Request-Method': 'GET'})
         self.assertIn(response.code, range(200, 300))
         self.assertEqual(response.headers['Access-Control-Allow-Origin'],
                          'http://host.example.com')
 
     def test_that_preflight_fails_for_unacceptable_origin(self):
         response = self.fetch('/', method='OPTIONS',
-                              headers={'Origin': 'https://host.example.com'})
+                              headers={'Origin': 'https://host.example.com',
+                                       'Access-Control-Request-Method': 'GET'})
+        self.assertEqual(response.code, 403)
+
+    def test_that_preflight_fails_for_unacceptable_method(self):
+        response = self.fetch(
+            '/', method='OPTIONS',
+            headers={'Origin': 'http://host.example.com',
+                     'Access-Control-Request-Method': 'POST'})
+        self.assertEqual(response.code, 403)
+
+    def test_that_preflight_fails_when_missing_request_method(self):
+        response = self.fetch('/', method='OPTIONS',
+                              headers={'Origin': 'http://host.example.com'})
         self.assertEqual(response.code, 403)

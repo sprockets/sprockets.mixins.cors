@@ -4,5 +4,8 @@ from sprockets.mixins import cors
 
 
 class SimpleRequestHandler(cors.CORSMixin, web.RequestHandler):
+    """Very simple request handler that CORS enables the GET endpoint."""
 
-    pass
+    def initialize(self):
+        super(SimpleRequestHandler, self).initialize()
+        self.cors.allowed_methods.add('GET')

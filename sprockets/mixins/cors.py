@@ -10,6 +10,11 @@ class CORSSettings(object):
     """
     Configures the CORS behavior.
 
+    .. attribute:: allowed_methods
+
+       The :class:`set` of CORS accepted HTTP methods.  This controls
+       the :mailheader:`Access-Control-Allow-Methods` response header.
+
     .. attribute:: allowed_origins
 
        The :class:`set` of origins that are allowed for the endpoint.
@@ -43,15 +48,29 @@ class CORSMixin(object):
         Respond to an :http:method:`OPTIONS` request.
 
         This method relies on :attr:`self.SUPPORTED_METHODS` for the
-        content of the :http:header:`Allow` response header.
+        content of the :http:header:`Allow` response header.  The CORS
+        specific headers are generated based on the :attr:`.cors`
+        attribute.
 
         """
         self.set_header('Allow', ','.join(self.SUPPORTED_METHODS))
         self.set_status(204)
         if 'Origin' in self.request.headers:
-            if self.request.headers['Origin'] in self.cors.allowed_origins:
+            if self._cors_preflight_checks():
                 self.set_header('Access-Control-Allow-Origin',
                                 self.request.headers['Origin'])
+                self.set_header('Access-Control-Allow-Methods',
+                                ','.join(self.cors.allowed_methods))
             else:
                 self.set_status(403)
         self.finish()
+
+    def _cors_preflight_checks(self):
+        try:
+            origin = self.request.headers['Origin']
+            method = self.request.headers['Access-Control-Request-Method']
+        except KeyError:
+            return False
+
+        return (origin in self.cors.allowed_origins and
+                method in self.cors.allowed_methods)
