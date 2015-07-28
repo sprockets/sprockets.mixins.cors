@@ -1,0 +1,7 @@
+include LICENSE
+include tests.py
+include tox.ini
+graft docs
+graft requires
+global-exclude __pycache__
+global-exclude *.pyc
