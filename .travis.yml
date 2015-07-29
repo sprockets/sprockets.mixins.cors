@@ -4,9 +4,12 @@ python:
 - 3.4
 before_install:
 - pip install -r requires/testing.txt
+- pip install codecov
 install:
 - pip install -e .
-script: nosetests
+script: nosetests --with-coverage
+after_success:
+- codecov
 sudo: false
 deploy:
   distributions: sdist bdist_wheel

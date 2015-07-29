@@ -1,5 +1,9 @@
 .. include:: ../README.rst
 
+Examples
+--------
+.. literalinclude:: ../examples.py
+
 License
 -------
 .. include:: ../LICENSE

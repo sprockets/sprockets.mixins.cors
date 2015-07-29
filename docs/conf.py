@@ -13,6 +13,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.httpdomain',
 ]
 
 templates_path = []
@@ -37,5 +38,5 @@ html_theme_options = {
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/', None),
-    'tornado': ('https://tornadoweb.org/en/latest/', None),
+    'tornado': ('http://www.tornadoweb.org/en/latest/', None),
 }
