@@ -1,9 +1,28 @@
 """
+
 Tornado RequestHandler mix-in for implementing a CORS enabled endpoint.
+
+The CORS_ specification describes a method of securing javascript access
+to web resources across access domains.  This module implements a mix-in
+to be used with :class:`tornado.web.RequestHandler` that provides much
+of the functionality required by CORS_.
+
+.. _CORS: http://www.w3.org/TR/cors/
+
 """
 
 version_info = (0, 1, 0)
 __version__ = '.'.join(str(v) for v in version_info)
+
+SIMPLE_REQUEST_HEADERS = frozenset(('accept', 'accept-language',
+                                    'content-language'))
+"""
+Request headers that get special treatment per CORS.
+
+These are considered "simple headers" and are always acceptable to
+send in CORS-enabled requests.
+
+"""
 
 
 class CORSSettings(object):
@@ -28,11 +47,19 @@ class CORSSettings(object):
        :mailheader:`Access-Control-Allow-Credentials` header in the
        response.
 
+    .. attribute:: request_headers
+
+       A :class:`set` of header names that are acceptable in cross-origin
+       requests.  Headers added to this set **MUST** be lower-cased before
+       adding them to the set.
+
     """
     def __init__(self):
         self.allowed_methods = set()
         self.allowed_origins = set()
         self.credentials_supported = False
+        self.request_headers = set(header.lower()
+                                   for header in SIMPLE_REQUEST_HEADERS)
 
 
 class CORSMixin(object):
@@ -53,7 +80,7 @@ class CORSMixin(object):
 
     def prepare(self):
         super(CORSMixin, self).prepare()
-        if not self._finished:
+        if not self._finished and self.request.method != 'OPTIONS':
             origin = self.request.headers.get('Origin')
             if origin in self.cors.allowed_origins:
                 self.set_header('Access-Control-Allow-Origin', origin)
@@ -83,11 +110,15 @@ class CORSMixin(object):
         try:
             origin = self.request.headers['Origin']
             method = self.request.headers['Access-Control-Request-Method']
+            headers = self.request.headers.get(
+                'Access-Control-Request-Headers', '')
         except KeyError:
             return False
 
+        headers = _filter_headers(headers, self.cors.request_headers)
         return (origin in self.cors.allowed_origins and
-                method in self.cors.allowed_methods)
+                method in self.cors.allowed_methods and
+                len(headers) == 0)
 
     def _build_preflight_response(self, origin):
         self.set_header('Access-Control-Allow-Origin', origin)
@@ -95,3 +126,18 @@ class CORSMixin(object):
                         ','.join(self.cors.allowed_methods))
         if self.cors.credentials_supported:
             self.set_header('Access-Control-Allow-Credentials', 'true')
+        exposed_headers = self.cors.request_headers - SIMPLE_REQUEST_HEADERS
+        if exposed_headers:
+            self.set_header('Access-Control-Allow-Headers',
+                            ','.join(exposed_headers))
+
+
+def _filter_headers(header_str, simple_headers):
+    header_str = header_str.lower().replace(' ', '').replace('\t', '')
+    if not header_str:
+        return set()
+
+    header_set = set(value for value in header_str.split(','))
+    header_set.difference_update(simple_headers)
+    header_set.difference_update('')
+    return header_set

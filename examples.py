@@ -10,10 +10,12 @@ from sprockets.mixins import cors
 class SimpleRequestHandler(cors.CORSMixin, web.RequestHandler):
     """Very simple request handler that CORS enables the GET endpoint."""
 
-    def initialize(self, creds=False):
+    def initialize(self, creds=False, req_headers=None):
         super(SimpleRequestHandler, self).initialize()
         self.cors.allowed_methods.add('GET')
         self.cors.credentials_supported = creds
+        if req_headers:
+            self.cors.request_headers.update(hdr.lower() for hdr in req_headers)
 
     def prepare(self):
         # This is used to test that the mixin does not interfere
