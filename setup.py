@@ -2,7 +2,6 @@
 import os.path
 
 import setuptools
-
 import sprockets.mixins.cors
 
 

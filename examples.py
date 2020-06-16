@@ -2,9 +2,8 @@
 
 import logging
 
-from tornado import ioloop, web
-
 from sprockets.mixins import cors
+from tornado import ioloop, web
 
 
 class SimpleRequestHandler(cors.CORSMixin, web.RequestHandler):
@@ -15,7 +14,8 @@ class SimpleRequestHandler(cors.CORSMixin, web.RequestHandler):
         self.cors.allowed_methods.add('GET')
         self.cors.credentials_supported = creds
         if req_headers:
-            self.cors.request_headers.update(hdr.lower() for hdr in req_headers)
+            self.cors.request_headers.update(hdr.lower()
+                                             for hdr in req_headers)
 
     def prepare(self):
         # This is used to test that the mixin does not interfere

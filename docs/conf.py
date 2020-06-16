@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import alabaster
-
 from sprockets.mixins import cors
 
 project = 'sprockets.mixins.cors'

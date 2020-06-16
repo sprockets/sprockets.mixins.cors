@@ -29,25 +29,25 @@ class CORSSettings(object):
     """
     Configures the CORS behavior.
 
-    .. attribute:: allowed_methods
+    .. attribute::allowed_methods
 
        The :class:`set` of CORS accepted HTTP methods.  This controls
        the :mailheader:`Access-Control-Allow-Methods` response header.
 
-    .. attribute:: allowed_origins
+    .. attribute::allowed_origins
 
        The :class:`set` of origins that are allowed for the endpoint.
        This controls the :mailheader:`Access-Control-Allow-Origin`
        response header.  If the requested origin is in this set, then
        the origin is allowed; otherwise, a :http:statuscode:`403` is returned.
 
-    .. attribute:: credentials_supported
+    .. attribute::credentials_supported
 
        Should the mix-in generate the
        :mailheader:`Access-Control-Allow-Credentials` header in the
        response.
 
-    .. attribute:: request_headers
+    .. attribute::request_headers
 
        A :class:`set` of header names that are acceptable in cross-origin
        requests.  Headers added to this set **MUST** be lower-cased before
@@ -58,15 +58,15 @@ class CORSSettings(object):
         self.allowed_methods = set()
         self.allowed_origins = set()
         self.credentials_supported = False
-        self.request_headers = set(header.lower()
-                                   for header in SIMPLE_REQUEST_HEADERS)
+        self.request_headers = {header.lower()
+                                for header in SIMPLE_REQUEST_HEADERS}
 
 
 class CORSMixin(object):
     """
     Mix this in over a :class:`tornado.web.RequestHandler` for CORS support.
 
-    .. attribute:: cors
+    .. attribute::cors
 
        A :class:`.CORSSettings` instance that controls the behavior of
        the mix-in.
@@ -89,10 +89,10 @@ class CORSMixin(object):
 
     def options(self):
         """
-        Respond to an :http:method:`OPTIONS` request.
+        Respond to an :http:method:OPTIONS request.
 
         This method relies on :attr:`self.SUPPORTED_METHODS` for the
-        content of the :http:header:`Allow` response header.  The CORS
+        content of the :http:header:Allow response header.  The CORS
         specific headers are generated based on the :attr:`.cors`
         attribute.
 
@@ -135,7 +135,7 @@ def _filter_headers(header_str, simple_headers):
     if not header_str:
         return set()
 
-    header_set = set(value for value in header_str.split(','))
+    header_set = {str(value) for value in header_str.split(',')}
     header_set.difference_update(simple_headers)
     header_set.difference_update('')
     return header_set
