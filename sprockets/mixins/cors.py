@@ -98,13 +98,11 @@ class CORSMixin(object):
 
         """
         self.set_header('Allow', ','.join(self.SUPPORTED_METHODS))
-        self.set_status(204)
         if 'Origin' in self.request.headers:
             if self._cors_preflight_checks():
                 self._build_preflight_response(self.request.headers['Origin'])
             else:
                 self.set_status(403)
-        self.finish()
 
     def _cors_preflight_checks(self):
         try:
