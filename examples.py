@@ -2,8 +2,9 @@
 
 import logging
 
-from sprockets.mixins import cors
 from tornado import ioloop, web
+
+from sprockets.mixins import cors
 
 
 class SimpleRequestHandler(cors.CORSMixin, web.RequestHandler):

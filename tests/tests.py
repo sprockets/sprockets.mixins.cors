@@ -1,8 +1,9 @@
 from __future__ import absolute_import
 
 from examples import SimpleRequestHandler
-from sprockets.mixins import cors
 from tornado import testing, web
+
+from sprockets.mixins import cors
 
 
 class OptionSupportTests(testing.AsyncHTTPTestCase):
