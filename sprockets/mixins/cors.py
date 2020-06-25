@@ -98,6 +98,7 @@ class CORSMixin(object):
 
         """
         self.set_header('Allow', ','.join(self.SUPPORTED_METHODS))
+        self.set_status(204)
         if 'Origin' in self.request.headers:
             if self._cors_preflight_checks():
                 self._build_preflight_response(self.request.headers['Origin'])
@@ -128,6 +129,24 @@ class CORSMixin(object):
         if exposed_headers:
             self.set_header('Access-Control-Allow-Headers',
                             ','.join(exposed_headers))
+
+    def _clear_headers_for_304(self) -> None:
+        # Overrides '_clear_headers_for_304' method from
+        # web.RequestHandler to not clear the ALLOW header when the status
+        # code is set to 204. This is bug in Tornado, which is fixed in the
+        # Tornado v6.1 but not yet released. This method can be removed once
+        # it is updated to Tornado v6.1
+        headers = [
+            "Content-Encoding",
+            "Content-Language",
+            "Content-Length",
+            "Content-MD5",
+            "Content-Range",
+            "Content-Type",
+            "Last-Modified",
+        ]
+        for h in headers:
+            self.clear_header(h)
 
 
 def _filter_headers(header_str, simple_headers):
