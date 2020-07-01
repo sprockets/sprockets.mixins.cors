@@ -137,13 +137,13 @@ class CORSMixin(object):
         # Tornado v6.1 but not yet released. This method can be removed once
         # it is updated to Tornado v6.1
         headers = [
-            "Content-Encoding",
-            "Content-Language",
-            "Content-Length",
-            "Content-MD5",
-            "Content-Range",
-            "Content-Type",
-            "Last-Modified",
+            'Content-Encoding',
+            'Content-Language',
+            'Content-Length',
+            'Content-MD5',
+            'Content-Range',
+            'Content-Type',
+            'Last-Modified',
         ]
         for h in headers:
             self.clear_header(h)
