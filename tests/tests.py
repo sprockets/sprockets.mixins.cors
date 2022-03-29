@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import asyncio
+
 from examples import SimpleRequestHandler
 from tornado import testing, web
 
@@ -136,3 +138,34 @@ class StandardRequestTests(testing.AsyncHTTPTestCase):
         response = self.fetch('/', headers={
             'Origin': 'http://host.example.com', 'X-Fail': 'yes please'})
         self.assertNotIn('Access-Control-Allow-Origin', response.headers)
+
+
+class PrepareCoroutineTests(testing.AsyncHTTPTestCase):
+    def setUp(self):
+        super().setUp()
+        self.coroutine_has_finished = False
+
+    def make_async_handler_class(self):
+        test_instance = self
+
+        class AsyncMixin:
+            @staticmethod
+            async def prepare():
+                await asyncio.sleep(0)
+                test_instance.coroutine_has_finished = True
+
+        class AsyncPrepareHandler(cors.CORSMixin, AsyncMixin,
+                                  web.RequestHandler):
+            def get(self):
+                self.set_status(204)
+                self.finish()
+
+        return AsyncPrepareHandler
+
+    def get_app(self):
+        async_prepare_handler = self.make_async_handler_class()
+        return web.Application([web.url('/', async_prepare_handler)])
+
+    def test_prepare_coroutine_is_awaited(self):
+        self.fetch('/')
+        self.assertTrue(self.coroutine_has_finished)

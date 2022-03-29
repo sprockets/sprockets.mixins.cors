@@ -1,6 +1,10 @@
 Version History
 ===============
 
+`1.0.1`_
+--------
+ - fix awaiting the returned coroutine if the handler's ``prepare`` function is async
+
 `0.1.1`_
 --------
  - minor packaging changes
@@ -29,5 +33,6 @@ Version History
      - :mailheader:`Access-Control-Allow-Origin`
      - :mailheader:`Access-Control-Allow-Credentials`
 
+.. _1.0.1: https://github.com/sprockets/sprockets.mixins.cors/compare/1.0.0...1.0.1
 .. _0.1.1: https://github.com/sprockets/sprockets.mixins.cors/compare/0.1.0...0.1.1
 .. _0.1.0: https://github.com/sprockets/sprockets.mixins.cors/compare/0.0.0...0.1.0
