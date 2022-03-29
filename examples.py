@@ -26,7 +26,7 @@ class SimpleRequestHandler(cors.CORSMixin, web.RequestHandler):
             self.set_status(400)
             self.finish()
 
-        super(SimpleRequestHandler, self).prepare()
+        return super(SimpleRequestHandler, self).prepare()
 
     def get(self):
         self.set_status(204)

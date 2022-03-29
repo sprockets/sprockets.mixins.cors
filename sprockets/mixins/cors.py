@@ -10,6 +10,7 @@ of the functionality required by CORS_.
 .. _CORS: http://www.w3.org/TR/cors/
 
 """
+import asyncio
 
 version_info = (1, 0, 0)
 __version__ = '.'.join(str(v) for v in version_info)
@@ -78,8 +79,11 @@ class CORSMixin(object):
         self.cors.allowed_origins.update(self.settings.get('cors_origins', []))
         super(CORSMixin, self).initialize(**kwargs)
 
-    def prepare(self):
-        super(CORSMixin, self).prepare()
+    async def prepare(self):
+        maybe_coro = super(CORSMixin, self).prepare()
+        if asyncio.iscoroutine(maybe_coro):
+            await maybe_coro
+
         if not self._finished and self.request.method != 'OPTIONS':
             origin = self.request.headers.get('Origin')
             if origin in self.cors.allowed_origins:
